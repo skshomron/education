@@ -1,0 +1,19 @@
+.capital-text{
+    font-size: x-large;
+}
+.capital-number{
+    font-size: 64px;
+}
+.info{
+    font-size: medium;
+}
+.divInline{
+    display: inline-flex;
+}
+.alignright{
+    text-align: right;
+}
+span{
+    display: block;
+    padding: 5px;
+}
