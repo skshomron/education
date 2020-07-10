@@ -3,10 +3,12 @@ import './App.css';
 import WeatherDisplayer from './WeatherDisplayer.js';
 import WeatherRequester from './WeatherRequester.js';
 
-const baseurl = 'https://api.openweathermap.org/data/2.5/weather'; 
+const baseUrl = 'https://api.openweathermap.org/data/2.5'; 
+const weatherUrlStr = 'https://api.openweathermap.org/data/2.5/weather';
+const oneCallUrlStr = 'https://api.openweathermap.org/data/2.5/onecall';
+const apiKey= '14e2516a643e05405078f5271647d366';
+const units='metric';
 
-const APIKEY= '14e2516a643e05405078f5271647d366';
-const UNITS='metric';
 class App extends React.Component {
   constructor(props){
     super(props);
@@ -25,19 +27,37 @@ class App extends React.Component {
   }
 
   onGetTodayWeatherClicked(cityName){
-    let url = new URL(baseurl);
-    const params = {appid:APIKEY,q:this.state.cityName, units:UNITS};
-    url.search = new URLSearchParams(params).toString();
-    console.log(url);    
-    fetch(url)
+    
+    let weatherUrl = new URL(weatherUrlStr);
+    let params = {appid:apiKey,q:this.state.cityName};
+    weatherUrl.search = new URLSearchParams(params).toString();   
+    fetch(weatherUrl)
     .then(result => result.json())
-    .then(data => this.setState({weather:data}))
+    .then(weather => {
+      const coord = weather.coord;
+      this.setState({cityName:weather.name, country:weather.sys.country})
+      if(coord){
+        let oneCallUrl = new URL(oneCallUrlStr);
+        params = {appid:apiKey,lon:coord.lon,lat:coord.lat, units:units,exclude:'minutely,hourly'};
+        oneCallUrl.search = new URLSearchParams(params).toString();   
+        return  fetch(oneCallUrl);
+      }
+      return null;
+    })      
+    .then(result =>{
+      if(result){
+        return result.json();
+      }
+    })
+    .then(onecall => {
+     this.setState({oneCall:onecall});
+    })        
     .catch(err=> console.error(err));
   }
 
   onGetWeekWeatherClicked(){
-    let url = new URL(baseurl);
-    const params = {appid:APIKEY,q:this.state.cityName};
+    let url = new URL(baseUrl);
+    const params = {appid:apiKey,q:this.state.cityName};
     url.search = new URLSearchParams(params).toString();
     console.log(url.request);
     fetch(url.href)
@@ -47,6 +67,7 @@ class App extends React.Component {
   }
 
   render(){
+    const {oneCall, cityName, country} = this.state;
     return (
       <div className="App">
         <header className="App-header">
@@ -69,7 +90,7 @@ class App extends React.Component {
             <WeatherRequester onCityNameChanged={this.onCityNameChanged} 
                               onGetTodayWeatherClicked={this.onGetTodayWeatherClicked}
                               onGetWeekWeatherClicked={this.onGetWeekWeatherClicked}></WeatherRequester>
-            <WeatherDisplayer weather={this.state.weather}></WeatherDisplayer>
+            <WeatherDisplayer oneCall={oneCall} cityName={cityName} country={country}></WeatherDisplayer>
           </div>
         </section>
         <footer >
