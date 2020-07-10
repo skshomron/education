@@ -93,7 +93,7 @@ function Square(props)  {
       const winner = calculateWinner(current.squares);
       
       const moves = history.map((step,move) =>{
-        debugger;
+        
         const desc = move?
         'Revenir au tour n' + move + ' ('+step.line+','+step.column+')':
         'Revenir au debut de la partie';
